@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:papasan="http://redgates.com/2015/03/papasan/"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for the Papasan service customer RDF.
+  The "dc:description" elements in this document are "Dublin Core"
+  metadata elements that are effectively comments for the schema.
+  </dc:description>
+
+  <include href="../../include/basic-types.rng" />
+  <include href="../../include/base-rdf.rng" />
+
+  <dc:description>
+  The root of the document is always an RDF list.
+  </dc:description>
+  <start>
+      <ref name="rdf" />
+  </start>
+
+  <dc:description>
+  A customer list contains any number of customers account records,
+  including none.
+  </dc:description>
+  <define name="rdf">
+      <element name="rdf:RDF">
+          <zeroOrMore>
+              <ref name="customer" />
+          </zeroOrMore>
+      </element>
+  </define>
+
+  <dc:description>
+  Each account record requires this set of subrecords, but the order is
+  not important.
+  </dc:description>
+  <define name="customer">
+      <element name="papasan:customer">
+          <interleave>
+              <ref name="accountID" />
+              <ref name="certificate-data" />
+              <ref name="storageLimit" />
+              <ref name="subscription-expiration" />
+              <ref name="zmanda-network-id" />
+              <ref name="email" />
+              <ref name="backup-runs" />
+          </interleave>
+      </element>
+  </define>
+
+  <dc:description>
+  Each customer may have a set of backup runs, but potentially none yet.
+  </dc:description>
+  <define name="backup-runs">
+      <zeroOrMore>
+          <ref name="backup-run" />
+      </zeroOrMore>
+  </define>
+
+  <dc:description>
+  Each backup run has the following sub-elements, but in any order.
+  Because this is RDF, the BackupRun predicate requires an object as
+  its target.  This object does not need to be named outside of the RDF,
+  so here we use an RDF blank node - which is represented by the
+  rdf:Description element.
+  </dc:description>
+  <define name="backup-run">
+      <element name="papasan:BackupRun">
+          <element name="rdf:Description">
+              <interleave>
+                  <ref name="backup-set-id" />
+                  <ref name="backup-set-name" />
+                  <ref name="computer-name" />
+                  <ref name="status" />
+                  <ref name="last-activity" />
+                  <ref name="storage-gb" />
+              </interleave>
+          </element>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="accountID">
+      <element name="papasan:AccountID">
+          <ref name="unsignedInt" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="email">
+      <element name="papasan:email">
+          <ref name="emailAddress" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="storageLimit">
+      <element name="papasan:StorageLimitGB">
+          <ref name="unsignedInt" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="zmanda-network-id">
+      <element name="papasan:ZmandaNetworkID">
+          <ref name="unsignedInt" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="certificate-data">
+      <element name="papasan:CertificateData">
+          <text />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="subscription-expiration">
+      <element name="papasan:SubscriptionExpiresTime">
+          <data type="dateTime" />
+      </element>
+  </define>
+
+  <dc:description>
+  The current information from StarForge for this element is empty.
+  We accept any text to support if this suddenly changes value from
+  StarForge.
+  </dc:description>
+  <define name="backup-set-id">
+      <element name="papasan:BackupSetId">
+          <text />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="backup-set-name">
+      <element name="papasan:BackupSetName">
+          <ref name="genericName" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="computer-name">
+      <element name="papasan:ComputerName">
+          <ref name="genericName" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="status">
+      <element name="papasan:Status">
+          <choice>
+            <value>Failed</value>
+            <value>Success</value>
+          </choice>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="last-activity">
+      <element name="papasan:LastActivity">
+          <data type="dateTime" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="storage-gb">
+      <element name="papasan:StorageGB">
+          <data type="double" />
+      </element>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

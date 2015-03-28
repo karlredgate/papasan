@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:papasan="http://redgates.com/2015/03/papasan/"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for the Papasan service customer RDF.
+  The "dc:description" elements in this document are "Dublin Core"
+  metadata elements that are effectively comments for the schema.
+  </dc:description>
+
+  <include href="../../include/basic-types.rng" />
+  <include href="../../include/base-rdf.rng" />
+
+  <dc:description>
+  The root of the document is always an RDF list.
+  </dc:description>
+  <start>
+      <ref name="rdf" />
+  </start>
+
+  <dc:description>
+  A customer list contains any number of customers account records,
+  including none.
+  </dc:description>
+  <define name="rdf">
+      <element name="rdf:RDF">
+          <zeroOrMore>
+              <ref name="customer" />
+          </zeroOrMore>
+      </element>
+  </define>
+
+  <dc:description>
+  Each account record requires this set of subrecords, but the order is
+  not important.
+  </dc:description>
+  <define name="customer">
+      <element name="papasan:customer">
+          <interleave>
+              <ref name="accountID" />
+              <ref name="storageLimit" />
+              <ref name="email" />
+          </interleave>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="accountID">
+      <element name="papasan:AccountID">
+          <ref name="unsignedInt" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="email">
+      <element name="papasan:email">
+          <ref name="emailAddress" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="storageLimit">
+      <element name="papasan:StorageLimitGB">
+          <ref name="unsignedInt" />
+      </element>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

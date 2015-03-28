@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:papasan="http://redgates.com/2015/03/papasan/"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for the Papasan service backup set RDF.
+  </dc:description>
+
+  <include href="../../include/basic-types.rng" />
+  <include href="../../include/base-rdf.rng" />
+
+  <dc:description>
+  The root of the document is always an RDF list.
+  </dc:description>
+  <start>
+      <ref name="rdf" />
+  </start>
+
+  <dc:description>
+  The backup set list contains a single entry for a resource request, and from
+  0 to many for the collection.
+  </dc:description>
+  <define name="rdf">
+      <element name="rdf:RDF">
+          <zeroOrMore>
+              <ref name="recovery-point" />
+          </zeroOrMore>
+      </element>
+  </define>
+
+  <dc:description>
+  Each account record requires this set of subrecords, but the order is
+  not important.
+  </dc:description>
+  <define name="recovery-point">
+      <element name="papasan:recovery-point">
+          <interleave>
+              <element name="papasan:name"><text/></element>
+              <ref name="protected-host" />
+          </interleave>
+      </element>
+  </define>
+
+  <dc:description>
+  The backup set must reference a valid protected host.  This represents
+  the customer machine that was backed up to this set.
+  </dc:description>
+  <define name="protected-host">
+      <element name="papasan:protected-host">
+         <attribute name="rdf:resource">
+           <text/>
+         </attribute>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="name">
+      <element name="papasan:name">
+          <ref name="genericName" />
+      </element>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

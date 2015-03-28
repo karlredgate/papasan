@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:papasan="http://redgates.com/2015/03/papasan/"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for the Papasan service recovery host RDF.
+  </dc:description>
+
+  <include href="../../include/basic-types.rng" />
+  <include href="../../include/base-rdf.rng" />
+
+  <dc:description>
+  The root of the document is always an RDF list.
+  </dc:description>
+  <start>
+      <ref name="rdf" />
+  </start>
+
+  <dc:description>
+  The recovery host list contains a single entry for a resource request, and from
+  0 to many for the collection.
+  </dc:description>
+  <define name="rdf">
+      <element name="rdf:RDF">
+          <zeroOrMore>
+              <ref name="host" />
+          </zeroOrMore>
+      </element>
+  </define>
+
+  <dc:description>
+  Each account record requires this set of subrecords, but the order is
+  not important.
+  </dc:description>
+  <define name="host">
+      <element name="papasan:recovery-host">
+          <interleave>
+              <ref name="hostname" />
+              <ref name="customer" />
+              <ref name="protectedhost" />
+              <zeroOrMore>
+                  <ref name="unknownElement" />
+              </zeroOrMore>
+          </interleave>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="customer">
+      <element name="papasan:customer">
+         <attribute name="rdf:resource">
+           <text/>
+         </attribute>
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="hostname">
+      <element name="papasan:name">
+          <ref name="genericName" />
+      </element>
+  </define>
+
+  <dc:description>
+  </dc:description>
+  <define name="protectedhost">
+      <element name="papasan:protected-host">
+         <attribute name="rdf:resource">
+           <text/>
+         </attribute>
+      </element>
+  </define>
+
+  <dc:description>
+  This rule allows other elements to be present that are not known
+  by this schema.  This is part of the version tolerance behavior.
+  Here we allow elements by any name other than the ones the request
+  must already contain, and also excluding elements that MUST NOT
+  be present upon create.
+  </dc:description>
+  <define name="unknownElement">
+      <element>
+         <anyName>
+             <except>
+                 <name>papasan:name</name>
+                 <name>papasan:customer</name>
+                 <name>papasan:protected-host</name>
+                 <name>papasan:desired-state</name>
+                 <name>papasan:current-state</name>
+                 <name>papasan:uuid</name>
+             </except>
+         </anyName>
+         <text />
+      </element>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

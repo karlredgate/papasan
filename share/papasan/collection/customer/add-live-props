@@ -1,0 +1,19 @@
+#!/bin/sh
+add_prop_rdf=/usr/share/papasan/xslt/add-prop.xslt
+[ -f share/papasan/xslt/add-prop.xslt ] && add_prop_rdf=share/papasan/xslt/add-prop.xslt
+
+tmp_file=/tmp/${RANDOM}.rdf
+
+if [ -L $1 ]; 
+then
+	filename=$(readlink "${1}")
+else
+	filename=$1
+fi
+last_modified=$( file-lastmodified-rfc1123 $filename )
+size=$(file-size $filename)
+display_name=$filename
+
+xsltproc --stringparam prop D:getlastmodified --stringparam value "${last_modified}" $add_prop_rdf "${filename}" | 
+xsltproc --stringparam prop D:getcontentlength --stringparam value $size $add_prop_rdf - | 
+xsltproc --stringparam prop D:displayname --stringparam value $display_name $add_prop_rdf -

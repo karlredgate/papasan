@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for the Papasan service RDF base data types.
+  The "dc:description" elements in this document are "Dublin Core"
+  metadata elements that are effectively comments for the schema.
+  </dc:description>
+
+  <dc:description>
+  </dc:description>
+  <define name="rdf-about-attribute">
+      <attribute name="rdf:about"><text/></attribute>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

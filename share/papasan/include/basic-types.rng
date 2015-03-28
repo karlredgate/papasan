@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <dc:description>
+  RelaxNG grammar for basic types used in the Papasan service.
+  The "dc:description" elements in this document are "Dublin Core"
+  metadata elements that are effectively comments for the schema.
+  </dc:description>
+
+
+  <define name="genericName">
+      <data type="string">
+          <param name="pattern">[a-zA-Z0-9_\+\-]+</param>
+      </data>
+  </define>
+
+  <define name="UUID">
+    <choice>
+      <data type="string">
+        <param name="pattern">[a-fA-F0-9]{32}</param>
+      </data>
+      <data type="string">
+        <param name="pattern">[a-fA-F0-9]{8}\-([a-fA-F0-9]{4}\-){3}[a-fA-F0-9]{12}</param>
+      </data>
+    </choice>
+  </define>
+
+  <define name="emailAddress">
+    <data type="string">
+      <!-- <param name="pattern">[a-fA-F0-9]+[@]([a-fA-F0-9])+.com</param> -->
+    </data>
+  </define>
+
+  <define name="unsignedInt">
+      <data type="unsignedInt">
+          <param name="pattern">[0-9]+</param>
+      </data>
+  </define>
+
+</grammar>
+<!-- vim: set autoindent expandtab sw=4: -->

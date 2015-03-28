@@ -1,0 +1,151 @@
+#!/usr/bin/node
+
+/* @file papasan
+ * @brief Web service API for Orchestration server.
+ *
+ * TODO
+ *  different content types
+ *  fill out the verbs
+ */
+
+/** Simple syslog object
+ *
+ * Only sends to localhost:514
+ */
+
+var util = require('util');
+
+function Syslog( tag ) {
+    var dgram = require('dgram');
+    // create socket and store in object
+    this.socket = dgram.createSocket( 'udp4' );
+    this.tag = tag;
+    this.port = 514;
+    this.host = '127.0.0.1';
+    this.facility = 3; // system daemon
+}
+
+Syslog.prototype.timestamp = function (level, message) {
+    var now = new Date();
+
+    var month = now.getMonth() | 0;
+    var day = now.getDate() | 0;
+
+    var month_name = [
+       "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+
+    var date_string =
+        util.format( "%s %d%d", month_name[month], (day/10)|0, (day%10)|0 );
+
+    var H = now.getHours() | 0;
+    var M = now.getMinutes() | 0;
+    var S = now.getSeconds() | 0;
+
+    var time_string = util.format( "%d%d:%d%d:%d%d",
+                                   (H/10)|0,  (H%10)|0,
+                                   (M/10)|0,  (M%10)|0,
+                                   (S/10)|0,  (S%10)|0 );
+
+    return util.format( "%s %s", date_string, time_string );
+}
+
+Syslog.prototype.transmit = function (level, message) {
+
+    var priority = (this.facility*8) + level;
+
+    var s = util.format( "<%d>%s %s %s: %s",
+                         priority,
+                         this.timestamp(),
+                         'localhost',
+                         this.tag,
+                         message );
+
+    function handler( err, bytes ) {
+        if (err) {
+            console.log( "UDP.send ERROR - " + err );
+            return;
+        }
+        // this.socket.close();
+    }
+
+    // Warning: if you send a bunch of messages and then call process.exit()
+    // the messages may not get flushed before you actually exit.
+    var packet = new Buffer( s );
+    this.socket.send( packet, 0, packet.length, this.port, this.host, handler.bind(this) );
+}
+
+Syslog.prototype.emergency = function (message) { this.transmit( 0, message ); }
+Syslog.prototype.alert     = function (message) {
+    this.transmit( 1, message );
+    console.log( message );
+}
+Syslog.prototype.critical  = function (message) { this.transmit( 2, message ); }
+Syslog.prototype.error     = function (message) { this.transmit( 3, message ); }
+Syslog.prototype.warning   = function (message) { this.transmit( 4, message ); }
+Syslog.prototype.notice    = function (message) { this.transmit( 5, message ); }
+Syslog.prototype.log       = function (message) { this.transmit( 5, message ); }
+Syslog.prototype.info      = function (message) { this.transmit( 6, message ); }
+
+var syslog_config = {
+    tag: "papasan",
+    facility: 'daemon',
+    hostname: 'localhost',
+};
+var logger = new Syslog( 'papasan' );
+
+/** Start of Papasan service
+ */
+
+var Papasan = require('papasan');
+
+/*
+ * The following are utility and setup functions specific to this
+ * daemon.  They are not generalized and so are not factored out.
+ */
+
+function debug( message ) {
+    if ( process.stdout.isTTY == false ) return;
+    console.log( message );
+}
+
+function sigint_handler() {
+    this.log( 'Recv SIGINT - shutting down' );
+    process.exit( 1 );
+}
+process.on( 'SIGINT', sigint_handler.bind(logger) );
+
+/*
+ * Uncaught exceptions that are caught here cause hung connections.
+ * Need to figure out how to handle.
+ */
+function handle_uncaught_exception( exception ) {
+    function print_frame( frame ) {
+        this.alert( "FRAME: " + frame );
+        console.log( "FRAME: " + frame );
+    }
+
+    this.alert( 'uncaught exception' );
+    this.alert( exception );
+    console.log( exception );
+    this.alert( ' ------ ' );
+    var stack = exception.stack.split(/\n */);
+    var exception_name = stack.shift();
+    this.alert( "exception: " + exception_name );
+    console.log( "exception: " + exception_name );
+    stack.map( print_frame.bind(this) );
+
+    process.exit( 1 );
+}
+process.on( 'uncaughtException', handle_uncaught_exception.bind(logger) );
+
+logger.log( "starting" );
+
+var port = 80;
+if ( process.getuid() != 0 )  port = 4001;
+
+var papasan = new Papasan( port, logger );
+papasan.start();
+
+/* vim: set autoindent expandtab sw=4 syntax=javascript: */
