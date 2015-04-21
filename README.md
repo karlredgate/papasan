@@ -9,3 +9,7 @@ Comments will tell when it is ready.
  * add build for OSX
  * add build for Deb?
  * NSIS for windows
+
+Layered apps install cron jobs to handle state transitions.
+
+Connect to inotify (or other OS filesystem notification)
