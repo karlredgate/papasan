@@ -82,9 +82,6 @@ ln -s node_modules $RPM_BUILD_ROOT/usr/lib/node
 %{__install} --directory --mode=755 $RPM_BUILD_ROOT/usr/libexec/papasan/steward
 %{__install} --mode=755 %{srcdir}/libexec/papasan/steward/* $RPM_BUILD_ROOT/usr/libexec/papasan/steward/
 
-%{__install} --directory --mode=755 $RPM_BUILD_ROOT/usr/bin
-%{__install} --mode=755 %{srcdir}/bin/* $RPM_BUILD_ROOT/usr/bin
-
 %{__install} --directory --mode=755 $RPM_BUILD_ROOT/usr/sbin
 %{__install} --mode=755 %{srcdir}/sbin/* $RPM_BUILD_ROOT/usr/sbin
 
@@ -109,8 +106,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,0755)
-%attr(0555,root,root) /usr/bin
-%attr(0555,root,root) /usr/sbin
+%attr(0555,root,root) /usr/sbin/papasan
 /etc/init/papasan.conf
 /usr/lib/node_modules/papasan
 /usr/lib/node_modules/uuid
