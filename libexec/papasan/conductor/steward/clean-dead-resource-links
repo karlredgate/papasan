@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+
+function log() {
+    logger -t papsan-steward -p cron.notice "$@"
+}
+
+DB=/var/db/papasan
+
+for path in $DB/*/*
+do
+    [ -h "$path" ] || continue # skip if it is not a link
+    [ -e "$path" ] && continue # skip if the link has a target
+    log "Clean dead link $path"
+    rm -f "$path"
+done
+
+# vim:autoindent expandtab sw=4

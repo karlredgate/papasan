@@ -1,0 +1,14 @@
+#!/bin/bash
+
+function die() {
+    echo "$*" 1>72
+    exit 1
+}
+
+[ $(id --user) != 0 ] && die "must be root"
+
+sed --in-place -e '/steward-errors/d' /etc/aliases
+sed --in-place -e '$asteward-errors: Karl.Redgate@gmail.com, example@gmail.com' /etc/aliases
+newaliases | logger -t papasan-install -p user.notice
+
+# vim:autoindent expandtab sw=4

@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# dr-create
+#
+# Requires: aws, jq
+#
+# Create a Windows VM for recovery.  The AMI used must meet the
+# following requirements:
+#
+# 1. Windows            >= 2008  (stake is 2012)
+# 2. SQLserver standard >= 2008  (stake is 2008)
+# 3. AWS EC2Config service
+# 4. WinRM
+# 5. PowerShell
+#
+# We should allow for some variation of the AMI that can be chosen.
+# For now we have hard coded an AMI that meets these requirements.
+#
+# ** one exception ** -- we are using SQL server express for
+#    initial testing for cost reasons
+#
+#
+# Windows_Server-2012-RTM-English-64Bit-SQL_2008_R2_SP2_Standard-2014.07.10
+# ami-c7e09ef7
+#
+# express requires at least t2.micro - but fits in the free tier
+# Windows_Server-2012-RTM-English-64Bit-SQL_2008_R2_SP2_Express-2014.07.10
+# ami-31e39d01
+#
+
+function die {
+    echo "$*" 1>&2
+    exit 1
+}
+
+INITDIR=/usr/share/papasan/aws/
+
+email=${1}
+hostname=${2}
+
+# email gives us access to customer host info
+
+[ -z "$email" ] && die "usage: $0 email hostname"
+[ -z "$hostname" ] && die "usage: $0 email hostname"
+
+json=/var/cache/papasan/aws/$hostname.json
+
+[ -f $json ] && die "VM $hostname already exists"
+
+WD=$( pwd -P )
+
+aws --region us-west-2 ec2 run-instances    \
+    --image-id        ami-55326765          \
+    --count           1                     \
+    --instance-type   t2.micro              \
+    --key-name        DRaaS-serveraws       \
+    --security-groups DRaaS                 \
+    --user-data       file://$INITDIR/cloud-init.xml \
+	--block-device-mapping "[{\"DeviceName\": \"/dev/sda1\",\"Ebs\": {\"VolumeSize\": 100}}]" \
+    > $json  || die "Failed to create EC2 instance"
+
+id=$( jq --raw-output '.["Instances"][0]["InstanceId"]' $json )
+
+echo "Created ec2 instance with ID: $id"
+# Looks like there is a delay between creation and tagability
+sleep 1
+
+aws --region us-west-2 ec2 create-tags \
+    --resources $id  \
+    --tags Key=Name,Value=$hostname \
+           Key=Customer,Value=$email \
+           Key=Project,Value=DRaaS \
+           Key=Owner,Value=Automation \
+           > /tmp/tag$$.log || die "Could not name instance"
+#
+# The output from this should look like:
+# { "return": "true" }
+
+echo "EC2 instance '$id' tagged with name '$hostname'"
+
+# find out when it is live
+# extract the password
+# find the public IP
+
+# vim:autoindent expandtab sw=4

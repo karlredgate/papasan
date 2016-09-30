@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# given just the email and hostname prepare the vm
+#
+
+function die {
+    echo "$*" 1>&2
+    exit 1
+}
+
+function warn {
+    echo "$*" 1>&2
+}
+
+email=${1}
+[ -z "$email" ] && die "usage: $0 email hostname"
+hostname=${2}
+[ -z "$hostname" ] && die "usage: $0 email hostname"
+
+json=/var/cache/papasan/aws/$hostname.json
+[ -f $json ] || die "no json config for $hostname"
+
+BIN=/usr/libexec/papasan/aws
+
+address=$( $BIN/get-public-ip $hostname )
+password=$( $BIN/get-windows-password $hostname )
+
+echo "$address" "$password"
+
+# vim:autoindent expandtab sw=4

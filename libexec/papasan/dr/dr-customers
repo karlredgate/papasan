@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# dr-list
+#
+
+function die() {
+    echo "$*" 1>&2
+    exit 1
+}
+
+cache=/var/cache/papasan/customer
+
+ls $cache/*.xml | sed -e 's|.*/||' -e 's|.xml$||'
+
+# vim:autoindent expandtab sw=4

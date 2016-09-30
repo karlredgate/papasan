@@ -1,0 +1,98 @@
+#!/usr/bin/ruby
+#
+# dr-prepare
+#
+# Prepare a newly created recovery VM for a specific customer.
+# This loads the software and the backup catalog, but does not
+# load a specific backup set.
+#
+
+require 'winrm'
+
+def die(message)
+    puts message
+    exit 1
+end
+
+class Recover
+    def initialize( address, password )
+        @endpoint = "http://#{address}:5985/wsman"
+        @winrm = WinRM::WinRMWebService.new(
+            @endpoint,
+            :plaintext,
+            :user => "Administrator",
+            :pass => password,
+            :basic_auth_only => true
+        )
+        @winrm.set_timeout(600)
+    end
+
+    def execute( command )
+        out = nil
+        err = nil
+
+        begin
+            @winrm.powershell(command) { |stdout, stderr|
+                out = "#{out}#{stdout}" unless stdout.nil?
+                err = "#{err}#{stderr}" unless stderr.nil?
+            }
+        rescue Exception => e
+            STDERR.puts "ERROR: #{e.class} <#{e}>"
+            raise e
+        end
+
+        raise err unless err.nil?
+        return out
+    end
+
+    def install( package )
+        execute( "Install-#{package}" )
+    end
+
+    def import_certificate( certificate )
+        execute( "Import-CloudCertificate -data \"#{certificate}\"" )
+    end
+
+    def restore( part )
+        execute( "Restore-#{part}" )
+    end
+
+end
+
+class Main
+    def initialize( argv )
+        @address     = argv[0]
+        @password    = argv[1]
+        @certificate = argv[2]
+        raise "usage: #{$0} address password cert" unless args_valid?
+    end
+
+    def args_valid?
+        return false if @address.nil?
+        return false if @password.nil?
+        return false if @certificate.nil?
+        return true
+    end
+
+    def start
+        puts "Starting recovery to IP address #{@address}"
+
+        recover = Recover.new(@address, @password)
+
+        ["JavaRuntime", "VisualCRuntime", "RedgatesServerBackup"].each { |package|
+            puts "Installing #{package}"
+            recover.install( package )
+        }
+
+        puts "Installing cloud certificate"
+        puts "<<#{@certificate}>>"
+
+        recover.import_certificate( @certificate )
+
+        recover.restore( "Catalog" )
+    end
+end
+
+Main.new( ARGV ).start
+
+# vim:autoindent expandtab sw=4

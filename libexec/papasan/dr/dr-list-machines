@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# dr-list
+#
+
+function die() {
+    echo "$*" 1>&2
+    exit 1
+}
+
+email="$1"
+
+[ -z "$email" ] && die "usage: dr list-machines email"
+
+config=/var/cache/papasan/customer/${email}.xml
+
+xsltproc /usr/share/papasan/xslt/list-machines.xslt $config | sort | uniq
+
+# vim:autoindent expandtab sw=4

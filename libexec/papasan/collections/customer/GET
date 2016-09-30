@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+#
+# The rdf:about is the URI namespace path of the customer,
+# host, etc object on this specific server.
+#
+
+# How to store the uuid?
+# -- perhaps in sqlite
+
+hostname=$( hostname )
+collection=customer
+resource=$uuid
+
+cat <<END
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:draas="http://redgates.com/2014/10/draas"
+         >
+
+    <draas:Customer rdf:about='http://${hostname}/${collection}/${resource}'>
+    <rdfs:label>John Smith</rdfs:label>
+    <draas:uid></draas:uid>
+    <draas:email><![CDATA[ ]]></draas:email>
+    </draas:CommandOutput>
+
+</rdf:RDF>
+END
+
+# vim:autoindent expandtab sw=4

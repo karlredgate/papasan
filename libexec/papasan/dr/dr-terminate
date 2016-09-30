@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# dr-stop
+#
+# Requires: aws, jq
+#
+
+function die {
+    echo "$*" 1>&2
+    exit 1
+}
+
+function warn {
+    echo "$*" 1>&2
+}
+
+INITDIR=/usr/share/papasan/aws/
+
+email=${1}
+hostname=${2}
+
+# email gives us access to customer host info
+
+[ -z "$email" ] && die "usage: $0 email hostname"
+[ -z "$hostname" ] && die "usage: $0 email hostname"
+
+json=/var/cache/papasan/aws/$hostname.json
+[ -f $json ] || die "no json config for $hostname"
+
+id=$( jq --raw-output '.["Instances"][0]["InstanceId"]' $json )
+result=/tmp/stop-instance-$$.log
+
+aws --region us-west-2 ec2 terminate-instances    \
+    --instance-ids $id  \
+    >> $result  || die "Failed to create EC2 instance"
+
+# vim:autoindent expandtab sw=4

@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Gather list of recovery-disks where the current-state
+# does not agree with desired-state and resolve.
+#
+
+XSLT=/usr/share/papasan/collection/recovery-disk/state-check.xslt
+[ -f share/papasan/collection/recovery-disk/state-check.xslt ] && {
+    XSLT=share/papasan/collection/recovery-disk/state-check.xslt
+}
+
+# default to localhost port 80
+SERVER=${SERVER:-localhost}
+
+function list_disk_states() {
+	xsltproc $XSLT http://${SERVER}/recovery-disk/ 2> /dev/null
+}
+
+list_disk_states | while read recovery_disk
+do
+	${recovery_disk}
+done
+
+# vim:autoindent expandtab sw=4

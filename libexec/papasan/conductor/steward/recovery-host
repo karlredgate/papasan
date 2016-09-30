@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Gather list of hosts where the current-state does not agree with
+# desired-state and resolve.
+#
+
+XSLT=/usr/share/papasan/collection/recovery-host/state-check.xslt
+[ -f share/papasan/collection/recovery-host/state-check.xslt ] && {
+    XSLT=share/papasan/collection/recovery-host/state-check.xslt
+}
+
+# default to localhost port 80
+SERVER=${SERVER:-localhost}
+
+function list_host_states() {
+    xsltproc $XSLT http://${SERVER}/recovery-host/ 2> /dev/null
+}
+
+list_host_states | while read line
+do
+    $line
+done
+
+# vim:autoindent expandtab sw=4

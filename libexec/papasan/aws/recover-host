@@ -1,0 +1,83 @@
+#!/usr/bin/ruby
+#
+# dr-recover
+#
+# Recover the default backup set.
+#
+
+require 'winrm'
+
+def die(message)
+    puts message
+    exit 1
+end
+
+class Recover
+    def initialize( address, password )
+        @endpoint = "http://#{address}:5985/wsman"
+        @winrm = WinRM::WinRMWebService.new(
+            @endpoint,
+            :plaintext,
+            :user => "Administrator",
+            :pass => password,
+            :basic_auth_only => true
+        )
+        @winrm.set_timeout(600)
+    end
+
+    def execute( command )
+        out = nil
+        err = nil
+
+        begin
+            @winrm.powershell(command) { |stdout, stderr|
+                out = "#{out}#{stdout}" unless stdout.nil?
+                err = "#{err}#{stderr}" unless stderr.nil?
+            }
+        rescue Exception => e
+            STDERR.puts "ERROR: #{e.class} <#{e}>"
+            raise e
+        end
+
+        raise err unless err.nil?
+        return out
+    end
+
+    def install( package )
+        execute( "Install-#{package}" )
+    end
+
+    def import_certificate( certificate )
+        execute( "Import-CloudCertificate -data \"#{certificate}\"" )
+    end
+
+    def restore( part )
+        execute( "Restore-#{part}" )
+    end
+
+end
+
+class Main
+    def initialize( argv )
+        @argv = argv
+        raise "usage: #{$0} address password" unless args_valid?
+    end
+
+    def args_valid?
+        return false if @argv[0].nil?
+        return false if @argv[1].nil?
+        return true
+    end
+
+    def start
+        puts "Starting backup set recover for IP address #{@argv[0]}"
+
+        recover = Recover.new(@argv[0], @argv[1])
+
+        recover.restore( "BackupSet" )
+    end
+end
+
+Main.new( ARGV ).start
+
+# vim:autoindent expandtab sw=4

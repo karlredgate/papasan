@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Extract the windows password from the EC2 instance data
+#
+
+function die {
+    echo "$*" 1>&2
+    exit 1
+}
+
+hostname=${1:?usage: $0 name}
+json=/var/cache/papasan/aws/$hostname.json
+detail=${hostname}-detail.json
+
+[ -f $json ] || die "no json config for $hostname"
+
+id=$( jq --raw-output '.["Instances"][0]["InstanceId"]' $json )
+
+case "$id" in
+"") die "invalid instance" ;;
+i-*) ;;
+esac
+
+aws --region us-west-2  ec2  describe-instances --instance-ids $id | \
+    jq --raw-output '.["Reservations"][0]["Instances"][0]["PublicDnsName"]'
+
+# vim:autoindent expandtab

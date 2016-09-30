@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+# dr-create
+#
+# Requires: aws, jq
+#
+# Create a Papasan VM.  The AMI used must be the 
+# most recent amazon linux version:
+#
+#
+
+function die {
+    echo "$*" 1>&2
+    exit 1
+}
+
+INITDIR=/usr/share/papasan/aws/
+KEYMAKER="keymaker@ec2-52-11-125-157.us-west-2.compute.amazonaws.com"
+
+env=${1}
+hostname=${2}
+
+# email gives us access to customer host info
+
+[ -z "$hostname" ] && die "usage: $0 environment hostname"
+
+json=/tmp/$hostname.json
+
+[ -f $json ] && die "VM $hostname already exists"
+
+CREDS=$(ssh $KEYMAKER alchemist-deploy)
+
+while read -r line; do
+    eval "export $line"
+done <<< "$CREDS"
+
+WD=$( pwd -P )
+
+aws --region us-west-2 ec2 run-instances    \
+    --image-id        ami-c3b3b1f3          \
+    --count           1                     \
+    --instance-type   t2.micro              \
+    --key-name        DRaaS-failover        \
+    --security-groups DRaaS                 \
+    --user-data       https://s3-us-west-2.amazonaws.com/packages.papasan/windows/$env/alchemist-init \
+    --iam-instance-profile Name=alchemist-role \
+    > $json || die "Failed to create EC2 instance"
+#   --block-device-mapping "[{\"DeviceName\": \"/dev/sda1\",\"Ebs\": {\"VolumeSize\": 100}}]"
+id=$( jq --raw-output '.["Instances"][0]["InstanceId"]' $json )
+
+echo "Created ec2 instance with ID: $id"
+# Looks like there is a delay between creation and tagability
+sleep 1
+
+aws --region us-west-2 ec2 create-tags \
+    --resources $id                    \
+    --tags Key=Name,Value=$hostname    \
+           Key=Project,Value=DRaaS     \
+           Key=Owner,Value=Automation  \
+           > /tmp/tag$$.log || die "Could not name instance"
+#
+# The output from this should look like:
+# { "return": "true" }
+
+echo "EC2 instance '$id' tagged with name '$hostname'"
+
+# find out when it is live
+# extract the password
+# find the public IP
+
+# vim:autoindent expandtab sw=4

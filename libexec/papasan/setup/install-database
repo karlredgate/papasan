@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# Create customer info database on install.
+#
+# This will need to handle upgrade at some point.
+#
+
+DB=/var/db/papasan/dr.db
+
+# for the moment we just remove the DB file for install
+# This needs to change to allow for upgrade
+rm -f $DB
+sqlite3 $DB < /usr/share/papasan/sql/dr.sql
+chown ec2-user $DB
+
+# vim:autoindent expandtab sw=4
