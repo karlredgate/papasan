@@ -1,7 +1,7 @@
 #!/usr/bin/node
 
 /* @file papasan
- * @brief Web service API for Orchestration server.
+ * @brief Web service REST API
  *
  * TODO
  *  different content types
