@@ -1,0 +1,37 @@
+{
+  "name": "papasan",
+  "productName": "Papasan",
+  "version": "0.1.0",
+  "description": "Redgate node.js REST service",
+  "main": "main.js",
+  "scripts": {
+    "test-watch": "npm test -- --watch",
+    "lint": "eslint app test *.js",
+    "build": "npm run build-main && npm run build-renderer",
+    "start": "cross-env NODE_ENV=production electron ./",
+    "package": "cross-env NODE_ENV=production node -r babel-register -r babel-polyfill package.js",
+    "package-all": "npm run package -- --all",
+    "postinstall": "echo postinstall",
+    "dev": "concurrently --kill-others \"npm run hot-server\" \"npm run start-hot\""
+  },
+  "bin": {
+    "jshint": "./node_modules/.bin/jshint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karlredgate/papasan"
+  },
+  "author": {
+    "name": "Karl Redgate",
+    "email": "karl.redgate@gmail.com",
+    "url": "https://github.com/karlredgate"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/karlredgate/papasan/issues"
+  },
+  "homepage": "https://github.com/karlredgate/papasan",
+  "devDependencies": {
+    "jshint": "*"
+  }
+}
